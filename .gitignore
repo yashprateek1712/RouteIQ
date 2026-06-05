@@ -1,0 +1,19 @@
+# Environments
+venv/
+env/
+project2/
+.env
+
+# Execution 
+__pycache__/
+*.pyc
+
+# ML Artifacts & Logs 
+artifacts/
+logs/
+notebook/real_delivery_data.csv
+notebook/data/olist_geolocation_dataset.csv
+*.csv
+
+# Jupyter
+.ipynb_checkpoints/
