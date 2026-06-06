@@ -3,7 +3,6 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer,StandardScaler
 
@@ -24,7 +23,7 @@ class DataTransformation:
 
     def get_data_transfer_object(self):
         try:
-            log_and_scale_columns = ['Order_Value_INR', 'Delivery_Time_Mins']
+            log_and_scale_columns = ['Order_Value', 'Delivery_Time_Mins']
             scale_only_columns = ['Latitude', 'Longitude']
 
             log_pipeline=Pipeline(

@@ -10,8 +10,6 @@ from dataclasses import dataclass
 from src.components.data_transformation import DataTransformation
 from src.components.data_transformation import DataTransformationConfig
 
-from src.components.model_trainer import ModelTrainerConfig
-from src.components.model_trainer import ModelTrainer
 
 @dataclass
 class DataIngestionConfig:
@@ -25,7 +23,7 @@ class DataIngestion:
         logging.info("Entered in data ingestion process")
         try:
             df=pd.read_csv("notebook/real_delivery_data.csv")
-            logging.info("Red the dataset as a DataFrame")
+            logging.info("Read the dataset as a DataFrame")
 
             os.makedirs(os.path.dirname(self.ingestion_config.raw_data_path),exist_ok=True)
 
@@ -35,8 +33,5 @@ class DataIngestion:
 
             return self.ingestion_config.raw_data_path
   
-
-            
-
         except Exception as e:
             raise CustomException(e,sys)    

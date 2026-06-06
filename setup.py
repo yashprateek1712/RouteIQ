@@ -17,7 +17,7 @@ def get_requirements(file_path:str)->List[str]:
 setup(
 name="ml_cluster_project",
 version="0.0.1",
-author="yash",
+author="Prateek Srivastav",
 author_email="",
 packages=find_packages(),
 install_requires=get_requirements("requirements.txt")

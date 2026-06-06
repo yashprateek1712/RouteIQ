@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RouteIQ — Delivery Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #F7F6F3;
+            color: #111;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        .topbar {
+            background: #111;
+            color: #fff;
+            padding: 0 40px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 10px; }
+        .logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
+        .logo em { color: #F97316; font-style: normal; }
+        .pipe { color: #444; }
+        .topbar-sub { font-size: 0.75rem; color: #888; font-family: 'JetBrains Mono', monospace; }
+        .model-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; background: #1e1e1e; border: 1px solid #333; color: #888; padding: 4px 10px; border-radius: 4px; }
+        .hero { background: #111; color: #fff; padding: 48px 40px 44px; border-bottom: 3px solid #F97316; }
+        .hero h1 { font-family: 'Space Grotesk', sans-serif; font-size: 2.4rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; max-width: 560px; }
+        .hero h1 span { color: #F97316; }
+        .hero p { margin-top: 12px; color: #999; font-size: 0.9rem; max-width: 480px; line-height: 1.6; }
+        .hero-stats { display: flex; gap: 32px; margin-top: 28px; }
+        .stat-num { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: #fff; }
+        .stat-num span { color: #F97316; }
+        .stat-label { font-size: 0.72rem; color: #666; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .main { display: grid; grid-template-columns: 380px 1fr; min-height: calc(100vh - 190px); }
+        .left-panel { background: #fff; border-right: 1px solid #E5E7EB; padding: 32px 28px; }
+        .section-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9CA3AF; margin-bottom: 16px; }
+        .field { margin-bottom: 20px; }
+        label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
+        input[type=number] { width: 100%; background: #F9FAFB; border: 1.5px solid #E5E7EB; border-radius: 8px; padding: 11px 14px; color: #111; font-family: 'JetBrains Mono', monospace; font-size: 0.92rem; transition: all 0.15s; }
+        input[type=number]:focus { outline: none; border-color: #F97316; background: #fff; box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
+        input[type=number]::placeholder { color: #C4C9D4; }
+        .field-hint { font-size: 0.72rem; color: #9CA3AF; margin-top: 5px; font-family: 'JetBrains Mono', monospace; }
+        .divider { border: none; border-top: 1px solid #F3F4F6; margin: 20px 0; }
+        .btn-predict { width: 100%; padding: 14px; background: #111; color: #fff; border: none; border-radius: 8px; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; letter-spacing: 0.02em; transition: background 0.15s, transform 0.1s; position: relative; overflow: hidden; }
+        .btn-predict::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: #F97316; }
+        .btn-predict:hover { background: #1a1a1a; transform: translateY(-1px); }
+        .result { margin-top: 20px; border-radius: 10px; padding: 20px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        .result-safe { background: #F0FDF4; border: 1.5px solid #86EFAC; }
+        .result-fraud { background: #FFF7F7; border: 1.5px solid #FCA5A5; }
+        .result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .result-icon { font-size: 1.3rem; }
+        .result-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 700; }
+        .safe-title { color: #15803D; }
+        .fraud-title { color: #B91C1C; }
+        .result-body { font-size: 0.8rem; color: #6B7280; line-height: 1.6; }
+        .zone-tag { display: inline-flex; align-items: center; gap: 6px; background: #111; color: #fff; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.82rem; padding: 6px 14px; border-radius: 6px; margin: 10px 0 6px; }
+        .zone-tag-dot { width: 7px; height: 7px; background: #F97316; border-radius: 50%; }
+        .right-panel { padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+        .map-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; font-weight: 600; color: #374151; }
+        .map-sub { font-size: 0.73rem; color: #9CA3AF; margin-top: 2px; margin-bottom: 14px; }
+        select { background: #fff; border: 1.5px solid #E5E7EB; border-radius: 8px; padding: 10px 14px; color: #111; font-family: 'Inter', sans-serif; font-size: 0.88rem; cursor: pointer; width: 100%; transition: border-color 0.15s; }
+        select:focus { outline: none; border-color: #F97316; }
+        .btn-locate { width: 100%; padding: 10px 14px; background: #fff; border: 1.5px solid #E5E7EB; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 500; color: #374151; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.15s; }
+        .btn-locate:hover { border-color: #F97316; color: #F97316; background: #FFFBF7; }
+        .locate-dot { width: 8px; height: 8px; background: #F97316; border-radius: 50%; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+        #map { flex: 1; min-height: 320px; border-radius: 10px; border: 1.5px solid #E5E7EB; overflow: hidden; }
+        .coords-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .coord-box { background: #fff; border: 1.5px solid #E5E7EB; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+        .coord-icon { font-size: 1rem; }
+        .coord-key { font-size: 0.67rem; text-transform: uppercase; letter-spacing: 0.07em; color: #9CA3AF; font-family: 'JetBrains Mono', monospace; }
+        .coord-val { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #111; font-weight: 500; margin-top: 1px; }
+        @media (max-width: 860px) {
+            .main { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.8rem; }
+            .hero-stats { gap: 20px; }
+            .topbar { padding: 0 20px; }
+            .hero { padding: 32px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-left">
+        <div class="logo">Route<em>IQ</em></div>
+        <span class="pipe">|</span>
+        <div class="topbar-sub">Brazil Delivery Network</div>
+    </div>
+    <div class="model-badge">IsolationForest + KMeans · Olist Dataset</div>
+</div>
+
+<div class="hero">
+    <h1>Smart routing for<br><span>96,000+</span> real orders</h1>
+    <p>Enter an order and we'll detect if it looks suspicious — then assign it to the right delivery zone.</p>
+    <div class="hero-stats">
+        <div class="stat-item">
+            <div class="stat-num">96<span>K</span></div>
+            <div class="stat-label">Training orders</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">5</div>
+            <div class="stat-label">Delivery zones</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">2</div>
+            <div class="stat-label">ML models</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">~1<span>%</span></div>
+            <div class="stat-label">Anomaly threshold</div>
+        </div>
+    </div>
+</div>
+
+<div class="main">
+
+    <div class="left-panel">
+        <div class="section-label">Order Details</div>
+        <form action="/predict" method="POST" id="orderForm">
+
+            <div class="field">
+                <label>Order Value (BRL R$)</label>
+                <input type="number" step="0.01" name="Order_Value"
+                       required placeholder="168.00"
+                       value="{{ form_data['Order_Value'] if form_data else '' }}">
+                <div class="field-hint">Median → R$105 · Safe range → R$30 to R$450</div>
+            </div>
+
+            <div class="field">
+                <label>Delivery Time (Days)</label>
+                <input type="number" step="1" name="Delivery_Time_Mins"
+                       required placeholder="12"
+                       value="{{ form_data['Delivery_Time_Mins'] if form_data else '' }}">
+                <div class="field-hint">Brazilian avg → 12 days · Safe range → 3 to 29 days</div>
+            </div>
+
+            <input type="hidden" name="Latitude"  id="lat_input"
+                   value="{{ form_data['Latitude']  if form_data else '' }}">
+            <input type="hidden" name="Longitude" id="lng_input"
+                   value="{{ form_data['Longitude'] if form_data else '' }}">
+
+            <hr class="divider">
+            <button type="submit" class="btn-predict">Run Prediction →</button>
+        </form>
+
+        {% if status == "SAFE" %}
+        <div class="result result-safe">
+            <div class="result-header">
+                <span class="result-icon">✅</span>
+                <span class="result-title safe-title">Order looks normal</span>
+            </div>
+            <div class="result-body">No suspicious patterns detected. Matches normal delivery behaviour from training data.</div>
+            <div class="zone-tag">
+                <span class="zone-tag-dot"></span>
+                Delivery Zone {{ warehouse + 1 }} of 5
+            </div>
+            <div class="result-body">Zone {{ warehouse + 1 }} will handle pickup, routing, and last-mile delivery.</div>
+        </div>
+        {% endif %}
+
+        {% if status == "FRAUD/ANOMALY DETECTED" %}
+        <div class="result result-fraud">
+            <div class="result-header">
+                <span class="result-icon">🚨</span>
+                <span class="result-title fraud-title">Anomaly flagged</span>
+            </div>
+            <div class="result-body">This order's value, delivery time, or location is outside the patterns seen in 96,000+ training orders. Sent for manual review.</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="right-panel">
+        <div>
+            <div class="map-title">Delivery Location</div>
+            <div class="map-sub">Click the map, pick a city, or auto-detect your location</div>
+        </div>
+
+        <select id="citySelect" onchange="selectCity(this.value)">
+            <option value="">Select a city...</option>
+            <option value="-23.5505,-46.6333">Sao Paulo</option>
+            <option value="-22.9068,-43.1729">Rio de Janeiro</option>
+            <option value="-19.9167,-43.9345">Belo Horizonte</option>
+            <option value="-25.4284,-49.2733">Curitiba</option>
+            <option value="-30.0346,-51.2177">Porto Alegre</option>
+            <option value="-12.9714,-38.5014">Salvador</option>
+            <option value="-3.7172,-38.5434">Fortaleza</option>
+            <option value="-8.0476,-34.8770">Recife</option>
+            <option value="-3.1190,-60.0217">Manaus</option>
+            <option value="-15.7942,-47.8825">Brasilia</option>
+        </select>
+
+        <button class="btn-locate" onclick="detectLocation()">
+            <span class="locate-dot"></span>
+            Use my current location
+        </button>
+
+        <div id="map"></div>
+
+        <div class="coords-strip">
+            <div class="coord-box">
+                <span class="coord-icon">↕</span>
+                <div>
+                    <div class="coord-key">Latitude</div>
+                    <div class="coord-val" id="lat_display">{{ form_data['Latitude'] if form_data else '—' }}</div>
+                </div>
+            </div>
+            <div class="coord-box">
+                <span class="coord-icon">↔</span>
+                <div>
+                    <div class="coord-key">Longitude</div>
+                    <div class="coord-val" id="lng_display">{{ form_data['Longitude'] if form_data else '—' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([-15.79, -47.88], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker = null;
+    var pinIcon = L.divIcon({
+        className: '',
+        html: '<div style="width:16px;height:16px;background:#F97316;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(249,115,22,0.5);"></div>',
+        iconSize: [16, 16], iconAnchor: [8, 8]
+    });
+
+    var preLat = document.getElementById('lat_input').value;
+    var preLng = document.getElementById('lng_input').value;
+    if (preLat && preLng) placeMarker(parseFloat(preLat), parseFloat(preLng));
+
+    function placeMarker(lat, lng) {
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([lat, lng], { icon: pinIcon }).addTo(map);
+        map.setView([lat, lng], 7);
+        var latStr = lat.toFixed(6);
+        var lngStr = lng.toFixed(6);
+        document.getElementById('lat_input').value         = latStr;
+        document.getElementById('lng_input').value         = lngStr;
+        document.getElementById('lat_display').textContent = latStr;
+        document.getElementById('lng_display').textContent = lngStr;
+    }
+
+    map.on('click', function(e) {
+        placeMarker(e.latlng.lat, e.latlng.lng);
+        document.getElementById('citySelect').value = '';
+    });
+
+    function selectCity(val) {
+        if (!val) return;
+        var p = val.split(',');
+        placeMarker(parseFloat(p[0]), parseFloat(p[1]));
+    }
+
+    function detectLocation() {
+        if (!navigator.geolocation) { alert('Geolocation not supported.'); return; }
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                placeMarker(pos.coords.latitude, pos.coords.longitude);
+                document.getElementById('citySelect').value = '';
+            },
+            function() { alert('Could not get location. Try clicking the map or selecting a city.'); }
+        );
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+        if (!document.getElementById('lat_input').value) {
+            e.preventDefault();
+            alert('Please set a delivery location — click the map or pick a city.');
+        }
+    });
+</script>
+</body>
+</html>
