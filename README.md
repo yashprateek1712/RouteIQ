@@ -175,6 +175,9 @@ Anomalous orders (expect **FLAGGED**):
 
 ---
 
+<img width="1265" height="889" alt="image" src="https://github.com/user-attachments/assets/197be5c5-8131-49b3-924c-baf69135d203" />
+
+
 ## Author
 
 **Prateek Srivastav** — built as an end-to-end ML project exploring unsupervised learning on real logistics data.
