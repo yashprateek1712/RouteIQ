@@ -41,8 +41,8 @@ Flask API  →  real-time predictions via web interface
 
 | Metric | Score |
 |---|---|
-| Silhouette Score | `run main.py to generate` |
-| Davies-Bouldin Index | `run main.py to generate` |
+| Silhouette Score | 0.2482 |
+| Davies-Bouldin Index | 1.1986 |
 | Anomalies detected | ~963 / 96,204 orders (~1%) |
 | Training data | 96,204 orders across Brazil |
 
@@ -102,6 +102,19 @@ RouteIQ/
 ```
 
 ---
+
+## Delivery Zones
+
+The K-Means model partitions normal orders into five logistics territories based on geographic location and delivery characteristics.
+
+| Zone | Primary Coverage |
+|--------|----------------|
+| Zone 0 | Southeast Brazil |
+| Zone 1 | Northeast & Northern Brazil |
+| Zone 2 | São Paulo–Paraná logistics corridor |
+| Zone 3 | Southern & Central-West Brazil |
+| Zone 4 | East-Central Brazil |
+
 
 ## Setup & Run
 
