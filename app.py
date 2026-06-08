@@ -22,7 +22,7 @@ def predict_datapoint():
         )
         
         pred_df = data.get_data_as_data_frame()
-        status, warehouse = predict_pipeline.predict(pred_df)
+        status, warehouse = predict_pipeline.predict(pred_df) 
         
         # Notice we are passing 'request.form' back to the HTML!
         return render_template('index.html', status=status, warehouse=warehouse, form_data=request.form)
